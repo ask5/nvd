@@ -16,10 +16,10 @@ Quick start
 
 4. The app uses SQLLite database *cve_db* present in the root
 
-5. You can use other database like Postgresql by simply changind the settings.py. Don't forget
+5. You can use other database like Postgresql by simply changing the settings.py. Don't forget
 to run manage.py migrate command in case you do it!
 
-6. A customer management command is provided to pull CVEs from https://nvd.nist.gov/vuln/data-feeds#JSON_FEED
+6. A custom management command is provided to pull CVEs from https://nvd.nist.gov/vuln/data-feeds#JSON_FEED
 You can pass the ZIP file URL to the command 
     
     Example
