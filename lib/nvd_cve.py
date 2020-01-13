@@ -4,6 +4,8 @@ import datetime
 '''
     class to parse the NVD CVE JSON feed 
 '''
+
+
 class Parser:
 
     def __init__(self, schema):
@@ -27,55 +29,52 @@ class Parser:
     '''
     def parse(self, json):
         result = []
-        if self.is_valid(json):
-            for item in json['CVE_Items']:
-                c = dict()
-                c['cve_id'] = item['cve']['CVE_data_meta']['ID']
 
-                if 'description' in item['cve'] and len(item['cve']['description']['description_data']) > 0:
-                    c['summary'] = item['cve']['description']['description_data'][0]['value']
+        for item in json['CVE_Items']:
+            c = dict()
+            if 'cve' in item and 'CVE_data_meta' in item['cve'] and 'ID' in item['cve']['CVE_data_meta']:
+                c['id'] = item['cve']['CVE_data_meta']['ID']
 
-                c['published_date'] = datetime.datetime.strptime(item['publishedDate'], "%Y-%m-%dT%H:%MZ") if \
-                    item['publishedDate'] else None
+            summary = ''
+            if 'description' in item['cve'] and 'description_data' in item['cve']['description']:
+                summary = item['cve']['description']['description_data'][0]['value']
+            c['summary'] = summary
 
-                c['last_modified_date'] = datetime.datetime.strptime(item['lastModifiedDate'], "%Y-%m-%dT%H:%MZ") if \
-                    item['lastModifiedDate'] else None
+            pd = item['publishedDate'].split('T')
+            c['published_date'] = datetime.datetime.strptime(pd[0], "%Y-%m-%d").date()
 
-                if 'baseMetricV2' in item['impact']:
-                    c['cvss_v2'] = {
-                        'base_score': item['impact']['baseMetricV2']['cvssV2']['baseScore'],
-                        'severity': item['impact']['baseMetricV2']['severity'],
-                        'vector_string': item['impact']['baseMetricV2']['cvssV2']['vectorString']
-                    }
-                if 'baseMetricV3' in item['impact']:
-                    c['cvss_v3'] = {
-                        'base_score': item['impact']['baseMetricV3']['cvssV3']['baseScore'],
-                        'severity': item['impact']['baseMetricV3']['cvssV3']['baseSeverity'],
-                        'vector_string': item['impact']['baseMetricV3']['cvssV3']['vectorString']
-                    }
+            lmd = item['lastModifiedDate'].split('T')
+            c['last_modified_date'] = datetime.datetime.strptime(lmd[0], "%Y-%m-%d").date()
 
-                affected_products = []
-                if 'configurations' in item and len(item['configurations']['nodes']) > 0:
-                    for node in item['configurations']['nodes']:
-                        if 'cpe_match' in node:
-                            for n in node['cpe_match']:
-                                affected_products.append(n)
-                        elif 'children' in node:
-                            for child in node['children']:
-                                if 'cpe_match' in child:
-                                    for n in child['cpe_match']:
-                                        affected_products.append(n)
+            if 'baseMetricV2' in item['impact']:
+                c['cvss_v2_base_score'] = item['impact']['baseMetricV2']['cvssV2']['baseScore']
+                c['cvss_v2_severity'] = item['impact']['baseMetricV2']['severity']
+                c['cvss_v2_vector_string'] = item['impact']['baseMetricV2']['cvssV2']['vectorString']
 
-                c['affected_products'] = affected_products
+            if 'baseMetricV3' in item['impact']:
+                c['cvss_v3_base_score'] = item['impact']['baseMetricV3']['cvssV3']['baseScore']
+                c['cvss_v3_severity'] = item['impact']['baseMetricV3']['cvssV3']['baseSeverity']
+                c['cvss_v3_vector_string'] = item['impact']['baseMetricV3']['cvssV3']['vectorString']
 
-                if 'references' in item['cve'] and 'reference_data' in item['cve']['references']:
-                    c['references'] = item['cve']['references']
-                else:
-                    c['references'] = []
+            affected_products = []
+            if 'configurations' in item and len(item['configurations']['nodes']) > 0:
+                for node in item['configurations']['nodes']:
+                    if 'cpe_match' in node:
+                        for n in node['cpe_match']:
+                            affected_products.append(n)
+                    elif 'children' in node:
+                        for child in node['children']:
+                            if 'cpe_match' in child:
+                                for n in child['cpe_match']:
+                                    affected_products.append(n)
 
-                result.append(c)
+            c['affected_products'] = affected_products
 
-        else:
-            raise Exception("Invalid JSON")
+            if 'references' in item['cve'] and 'reference_data' in item['cve']['references']:
+                c['references'] = item['cve']['references']['reference_data']
+            else:
+                c['references'] = []
+
+            result.append(c)
 
         return result

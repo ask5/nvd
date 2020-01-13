@@ -1,0 +1,71 @@
+{% extends "app/base.html" %}
+{% load static %}
+{% block main %}
+    <main class="container">
+        <div class="clearfix">
+            <ul class="list-inline float-right">
+              <li class="list-inline-item">
+                  <a href="{% url 'app:download' id=cve.cve_id %}">Download</a>
+              </li>
+              <li class="list-inline-item">
+                  <a href="{% url 'app:index' %}">Back</a>
+              </li>
+            </ul>
+        </div>
+        <h3>
+            {{ cve.cve_id }}
+        </h3>
+        <div class="clearfix">
+            <ul class="list-inline float-right">
+              <li class="list-inline-item"><strong>Published:</strong> {{ cve.published_date }}</li>
+              <li class="list-inline-item"><strong>Last Modified:</strong> {{ cve.last_modified_date }}</li>
+            </ul>
+        </div>
+        <p class="jumbotron">
+            {{ cve.summary }}
+        </p>
+        <h3>Severity</h3>
+        {% if cve.cvss_v3_base_score %}
+            <h5>CVSS V3.X</h5>
+            <p class="lead">
+                <strong>Base Score:</strong> <span>{{ cve.cvss_v3_base_score }}</span><br>
+                <strong>Severity:</strong> <span>{{ cve.cvss_v3_severity }}</span><br>
+                <strong>Vector:</strong> <span>{{ cve.cvss_v3_vector_string }}</span><br>
+            </p>
+        {% endif %}
+        {% if cve.cvss_v2_base_score %}
+            <h5>CVSS V2.0</h5>
+            <p class="lead">
+                <strong>Base Score:</strong> <span>{{ cve.cvss_v2_base_score }}</span><br>
+                <strong>Severity:</strong> <span>{{ cve.cvss_v2_severity }}</span><br>
+                <strong>Vector:</strong> <span>{{ cve.cvss_v2_vector_string }}</span><br>
+            </p>
+        {% endif %}
+        <h3>References</h3>
+        {% if cve.reference_set.all %}
+            <ul>
+
+                {% for ref in cve.reference_set.all %}
+                    <li>
+                        <a href="{{ ref.url }}" target="_blank">{{ ref.url }}</a>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>N/A</p>
+        {% endif %}
+        <h3>Affected Software</h3>
+        {% if cve.affected_products > 0 %}
+            <ul>
+                {% for software in cve.affectedproduct_set.all %}
+                    <li>
+                        {% if software.vulnerable %}Vulnerable: {% endif %}
+                        {{ software.uri }}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>N/A</p>
+        {% endif %}
+    </main>
+{% endblock %}

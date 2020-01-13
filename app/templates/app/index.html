@@ -1,0 +1,124 @@
+{% extends "app/base.html" %}
+{% load static %}
+{% block main %}
+    <main class="container-fluid">
+        <div class="col-auto pull-right">
+            <input type="text" id="cveSearch">
+            <button type="button" id="cveSearchSubmit" class="btn btn-primary">Search</button>
+        </div>
+        <div class="clearfix"></div>
+        <table id="cve_table" class="table table-condensed table-striped table-hover">
+            <thead>
+            <tr>
+                <th>CVE ID</th>
+                <th>Summary</th>
+                <th>Published</th>
+                <th>Last Modified</th>
+                <th>Affected Products</th>
+                <th>CVSS Severity</th>
+            </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </main>
+{% endblock %}
+
+{% block js %}
+    <script>
+        $(document).ready(function () {
+            var cveTable = $('#cve_table').DataTable({
+                "iDisplayLength": 100,
+                "deferRender": true,
+                "dom": '<"top"flp<"clear">>rt<"bottom"ifp<"clear">>',
+                "processing": true,
+                "serverSide": true,
+                "searching": false,
+                "dataSrc": "results",
+                "order": [
+                    [0, "asc"]
+                ],
+                "ajax": {
+                    "url": "/api/cve/",
+                    "data": function (data) {
+                        data.page = data.draw;
+                        delete data.draw;
+                        data.limit = data.length;
+                        delete data.length;
+                        data.offset = data.start;
+                        data.search = $('#cveSearch').val();
+                        var ordering = data.columns[data.order[0].column].data;
+                        if (data.order[0].dir === 'asc') {
+                            data.ordering = ordering;
+                        } else {
+                            data.ordering = "-" + ordering;
+                        }
+                        delete data.start;
+                        return data;
+                    },
+                    "dataFilter": function (data) {
+                        var json = jQuery.parseJSON(data);
+                        json.recordsTotal = json.count;
+                        json.recordsFiltered = json.count;
+                        json.data = json.results;
+                        delete json.results;
+                        return JSON.stringify(json);
+                    }
+                },
+                "columns": [
+                    { "data": "cve_id",
+                        "fnCreatedCell": function (nTd, sData, oData, iRow, iCol) {
+                            $(nTd).html("<a href='/app/cve/"+oData.cve_id +"'>"+ oData.cve_id +"</a>");
+                        }
+                    },
+                    {
+                        "data": "summary", "orderable": false,
+                        "render": function (data, type, row) {
+                            if(data.length > 50)
+                                return data.substring(0, 50) + "...";
+                            else
+                                return data;
+                        }
+                    },
+                    {
+                        "data": "published_date"
+                    },
+                    {
+                        "data": "last_modified_date"
+                    },
+                    {
+                        "data": "affected_products", "className": 'dt-body-right'
+                    },
+                    {
+                        "data": "cvss_v2_base_score", "className": 'dt-body-right',
+                        "fnCreatedCell": function (nTd, sData, oData, iRow, iCol) {
+                            if(oData.cvss_v2_base_score != null) {
+                                let c = 'info';
+                                const s = oData.cvss_v2_base_score;
+                                switch(true){
+                                    case s < 4.0:
+                                        c = 'success';
+                                        break;
+                                    case s < 7:
+                                        c = 'warning';
+                                        break;
+                                    case s < 11:
+                                        c = 'danger';
+                                        break;
+                                }
+                                $(nTd).html(oData.cvss_v2_base_score + " <span class='badge badge-"+ c +"'>" +
+                                    oData.cvss_v2_severity + "</span>");
+                            }
+                        }
+
+                    },
+
+                ]
+            });
+
+            $('#cveSearchSubmit').click(function (e) {
+                cveTable.draw();
+            });
+        });
+    </script>
+{% endblock %}
