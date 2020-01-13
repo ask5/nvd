@@ -97,4 +97,5 @@ Usage
     
 Example
 
-    $ python manage.py loadcve -u https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-modified.json.zip
+    source nvd/bin/activate
+    (nvd) python manage.py loadcve -u https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-modified.json.zip
