@@ -20,6 +20,4 @@ class NvdCveParserTests(SimpleTestCase):
     def test_feed(self):
         nvd_cve_parser = Parser(self.schema)
         cves = nvd_cve_parser.parse(self.cve_json)
-        for cve in cves:
-            print(len(cve['references']))
         self.assertTrue(nvd_cve_parser.is_valid(self.cve_json))

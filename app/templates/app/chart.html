@@ -1,0 +1,70 @@
+{% extends "app/base.html" %}
+{% load static %}
+{% block main %}
+    <main class="container">
+        <div>
+            <label for="daterange">Date Range</label>
+            <input type="text" id="daterange" name="daterange" value="01/01/2019 - 02/01/2020" />
+
+            <canvas id="myChart"></canvas>
+        </div>
+    </main>
+{% endblock %}
+{% block js %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+    <script>
+        $(document).ready(function () {
+
+            let DrawChart = function (data){
+                var ctx = document.getElementById('myChart');
+                var myChart = new Chart(ctx, {
+                    type: 'line',
+                    data: data
+                });
+            };
+
+            let GetChartData = function (d1, d2) {
+                $.ajax({
+                    url: '/api/chart/' + d1 + '/' + d2 + '/',
+                    method: 'GET',
+                    dataType: 'json',
+                    success: function (d) {
+
+                        let v = [];
+                        let labels = [];
+                        $.each(d.results, function( index, value ) {
+                            labels.push(value['last_modified_date']);
+                            v.push(value['cve_count']);
+                        });
+
+                        let data = {
+                            labels: labels,
+                            datasets: [{
+                                label: '# of CVEs modified',
+                                data: v,
+                                borderColor: [
+                                    'rgba(255, 99, 132, 1)',
+                                ],
+                                borderWidth: 1
+                            }]
+                        };
+                        console.log("data");
+                        console.log(data);
+                        DrawChart(data);
+                    }
+                });
+            };
+
+            GetChartData('2019-01-01', '2020-02-01');
+
+             $('input[name="daterange"]').daterangepicker({
+                opens: 'left'
+              }, function(start, end, label) {
+                 GetChartData(start.format('YYYY-MM-DD'), end.format('YYYY-MM-DD'));
+              });
+
+        });
+</script>
+{% endblock %}

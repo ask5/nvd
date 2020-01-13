@@ -21,3 +21,7 @@ def download(request, id):
     response = HttpResponse(serialized_cve, content_type='application/json')
     response['Content-Disposition'] = 'attachment; filename="'+ id +'.json"'
     return response
+
+
+def chart(request):
+    return render(request, 'app/chart.html')

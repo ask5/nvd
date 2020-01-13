@@ -16,20 +16,35 @@ Clone the repository
 
 Create virtual environment and install dependencies from requirements.txt
 
+    cd envs
     virtualenv nvd
-    source nvd/bin/activate (nvd/Scripts/activate for Windows)
-    pip install -r nvd/requirements.txt
+    source /envs/nvd/bin/activate (nvd/Scripts/activate for Windows)
+    pip install -r /nvd/requirements.txt
 
 Run local server
 
+    source /envs/nvd/bin/activate
     cd nvd
-    python manage.py runserver
+    (nvd) python manage.py runserver
     
-Check if the Site is up
+Check if the site is up
 
-    http://127.0.0.1:8000/app/
+    http://127.0.0.1:8000/
+
+## Frontend
+
+* Django Templates
+* DataTables for CVE grid
+* Bootstrap 4.0
+* ChartJs 
+
+## API
+
+The API is built using the Django Rest Framework
     
-## Database    
+    http://127.0.0.1:8000/api/
+    
+## Backend    
 
 The app is configured to use SQLLite database called *cve_db* available at the root
 
@@ -99,3 +114,5 @@ Example
 
     source nvd/bin/activate
     (nvd) python manage.py loadcve -u https://nvd.nist.gov/feeds/json/cve/1.1/nvdcve-1.1-modified.json.zip
+
+    
