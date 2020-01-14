@@ -77,7 +77,7 @@ Command handler
 
 Parser Class
 
-    app/lib/nvd_cve.py
+    lib/nvd_cve.py
     
 Usage
 
